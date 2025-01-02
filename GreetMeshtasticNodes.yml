@@ -1,0 +1,35 @@
+alias: Greet Meshtastic Nodes
+description: Reads NodeInfo Messages and if its not been seen before sends a greeting
+triggers:
+  - trigger: state
+    entity_id: sensor.node_info
+actions:
+  - if:
+      - condition: template
+        value_template: >
+          {{ states('sensor.node_info') not in
+          states('input_text.nodeinfohistory').split(',') }}
+    then:
+      - data:
+          qos: 0
+          retain: false
+          topic: msh/EU_868/2/json/mqtt/
+          payload: >-
+            #need to set this a a var to allow it to be cast as an int later -
+            casting in the JSON does not work {% set to_value =
+            states('sensor.node_info') %} {"from": 530572292, "type":
+            "sendtext", "to": {{ to_value | int }}, "payload": "Welcome to the
+            Olicana Net"}
+        action: mqtt.publish
+      - data:
+          entity_id: input_text.nodeinfohistory
+          value: |
+            {% set history = states('input_text.nodeinfohistory').split(',') %}
+            {% set new_state = trigger.to_state.state %}
+            {% if new_state not in history %}
+              {{ (history + [new_state]) | join(',') }}
+            {% else %}
+              {{ history | join(',') }}
+            {% endif %}
+        action: input_text.set_value
+mode: queued
