@@ -1,0 +1,29 @@
+sensor:
+  - name: "Primary Channel Messages"
+    unique_id: "primary_channel_messages"
+    state_topic: "msh/EU_868/2/json/LongFast/!1f9fe404"
+    #{% if value_json.from == 530572292 and value_json.payload.text is defined %}
+    value_template: >-
+      {% if value_json.payload.text is defined and value_json.channel == 0 %}
+        {{ value_json.payload.text }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
+  - name: "Node Info"
+    unique_id: "node_info"
+    state_topic: "msh/EU_868/2/json/LongFast/!1f9fe404"
+    value_template: >-
+      {% if value_json.type is defined and value_json.type == "nodeinfo" %}
+        {{ value_json.from }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
+  - name: "OC01 Direct Messages"
+    unique_id: "oc01_direct_messages"
+    state_topic: "msh/EU_868/2/json/PKI/!1f9fe404"
+    value_template: >-
+      {% if value_json.payload.text is defined%}
+        {{ value_json.payload.text }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
